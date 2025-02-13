@@ -1,0 +1,52 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.238.0/containers/typescript-node
+{
+  "name": "Alex-rag-webui backend (Python3 & fastapi)",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "backend",
+  "shutdownAction": "stopCompose",
+  "workspaceFolder": "/workspace",
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+          }
+        },
+        "isort.args": [
+          "--profile",
+          "black"
+        ],
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.languageServer": "Default",
+        "python.analysis.typeCheckingMode": "basic", // Change to "strict" if we ever get Django typing sorted out
+        "python.testing.pytestPath": "/usr/local/py-utils/bin/pytest"
+      },
+      "extensions": [
+        "ms-python.python",
+        // "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "GitHub.vscode-pull-request-github",
+        "mhutchie.git-graph",
+        "eamodio.gitlens"
+      ]
+    }
+  },
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [
+    8000
+  ],
+  "postCreateCommand": "echo \"source /usr/share/bash-completion/completions/git\" >> ~/.bashrc",
+  "postStartCommand": "git config --global --add safe.directory /workspace",
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  // "remoteUser": "vscode",
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.npmrc,target=/home/node/.npmrc,type=bind,consistency=cached"
+  ]
+}

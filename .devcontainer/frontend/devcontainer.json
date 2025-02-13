@@ -1,0 +1,53 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.238.0/containers/typescript-node
+{
+  "name": "Alex-rag-webui Frontend (npm and TS)",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "frontend",
+  "shutdownAction": "stopCompose",
+  "workspaceFolder": "/workspace",
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+        "prettier.semi": false,
+        "editor.tabSize": 2,
+        // "i18n-ally.localesPaths": ["src/translations"],
+        // "i18n-ally.keystyle": "nested",
+        // "i18n-ally.displayLanguage": "da",
+        // "i18n-ally.sourceLanguage": "da",
+        // "i18n-ally.keepFulfilled": true
+      },
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "svelte.svelte-vscode",
+        "GitHub.vscode-pull-request-github",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "mhutchie.git-graph",
+        "eamodio.gitlens",
+        "andys8.jest-snippets",
+        "github.vscode-github-actions",
+        "yoavbls.pretty-ts-errors",
+        "jock.svg",
+        // "Lokalise.i18n-ally",
+        "42Crunch.vscode-openapi",
+        "circlecodesolution.ccs-flutter-color" // Adds preview and colorpicker to color strings
+      ]
+    }
+  },
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [
+    3000
+  ],
+  "postCreateCommand": "echo \"source /usr/share/bash-completion/completions/git\" >> ~/.bashrc",
+  "postStartCommand": "git config --global --add safe.directory /workspace",
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  // "remoteUser": "vscode",
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.npmrc,target=/home/node/.npmrc,type=bind,consistency=cached"
+  ]
+}

@@ -1,0 +1,52 @@
+services:
+  frontend:
+    # image: ollama/ollama:latest
+    build:
+      dockerfile: frontend/Dockerfile
+    command: sleep infinity
+    restart: unless-stopped
+    # env_file: dev.env
+    network_mode: service:backend
+    volumes:
+      - ..:/workspace:cached
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ../
+      dockerfile: .devcontainer/backend/Dockerfile
+    volumes:
+      - ..:/workspace:cached
+    depends_on:
+      - ollama
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    restart: unless-stopped
+    command: sleep infinity
+    environment:
+      - OLLAMA_BASE_URLS=http://host.docker.internal:11434
+      - ENV=dev
+      - WEBUI_AUTH=False
+      - WEBUI_NAME=valiantlynx AI
+      - WEBUI_URL=http://localhost:8080
+      - WEBUI_SECRET_KEY=t0p-s3cr3t
+
+  ollama:
+    volumes:
+      - ../ollama-data/ollama:/root/.ollama
+    # container_name: ollama
+    pull_policy: always
+    tty: true
+    restart: unless-stopped
+    image: ollama/ollama:latest
+    ports:
+      - 11434:11434
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+#     networks:
+#       - ollama-docker
+
+# networks:
+#   ollama-docker:
+#     external: false
