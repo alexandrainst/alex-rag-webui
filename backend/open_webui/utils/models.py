@@ -1,28 +1,17 @@
-import time
 import logging
 import sys
+import time
 
 from aiocache import cached
 from fastapi import Request
-
-from open_webui.routers import openai, ollama
+from open_webui.config import DEFAULT_ARENA_MODEL
+from open_webui.env import GLOBAL_LOG_LEVEL, SRC_LOG_LEVELS
 from open_webui.functions import get_function_models
-
-
 from open_webui.models.functions import Functions
 from open_webui.models.models import Models
-
-
-from open_webui.utils.plugin import load_function_module_by_id
+from open_webui.routers import ollama, openai
 from open_webui.utils.access_control import has_access
-
-
-from open_webui.config import (
-    DEFAULT_ARENA_MODEL,
-)
-
-from open_webui.env import SRC_LOG_LEVELS, GLOBAL_LOG_LEVEL
-
+from open_webui.utils.plugin import load_function_module_by_id
 
 logging.basicConfig(stream=sys.stdout, level=GLOBAL_LOG_LEVEL)
 log = logging.getLogger(__name__)
@@ -30,6 +19,8 @@ log.setLevel(SRC_LOG_LEVELS["MAIN"])
 
 
 async def get_all_base_models(request: Request):
+    print("HERE3", flush=True)
+
     function_models = []
     openai_models = []
     ollama_models = []
@@ -54,12 +45,15 @@ async def get_all_base_models(request: Request):
 
     function_models = await get_function_models(request)
     models = function_models + openai_models + ollama_models
+    print("HERE4", flush=True)
 
     return models
 
 
 async def get_all_models(request):
+    print("HERE1", flush=True)
     models = await get_all_base_models(request)
+    print("HERE2", flush=True)
 
     # If there are no models, return an empty list
     if len(models) == 0:

@@ -13,49 +13,39 @@ from typing import Optional, Union
 from urllib.parse import urlparse
 
 import aiohttp
-from aiocache import cached
-
 import requests
-
+from aiocache import cached
 from fastapi import (
+    APIRouter,
     Depends,
     FastAPI,
     File,
     HTTPException,
     Request,
     UploadFile,
-    APIRouter,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, ConfigDict
-from starlette.background import BackgroundTask
-
-
-from open_webui.models.models import Models
-from open_webui.utils.misc import (
-    calculate_sha256,
+from open_webui.config import UPLOAD_DIR
+from open_webui.constants import ERROR_MESSAGES
+from open_webui.env import (
+    AIOHTTP_CLIENT_TIMEOUT,
+    AIOHTTP_CLIENT_TIMEOUT_OPENAI_MODEL_LIST,
+    BYPASS_MODEL_ACCESS_CONTROL,
+    ENV,
+    SRC_LOG_LEVELS,
 )
+from open_webui.models.models import Models
+from open_webui.utils.access_control import has_access
+from open_webui.utils.auth import get_admin_user, get_verified_user
+from open_webui.utils.misc import calculate_sha256
 from open_webui.utils.payload import (
     apply_model_params_to_body_ollama,
     apply_model_params_to_body_openai,
     apply_model_system_prompt_to_body,
 )
-from open_webui.utils.auth import get_admin_user, get_verified_user
-from open_webui.utils.access_control import has_access
-
-
-from open_webui.config import (
-    UPLOAD_DIR,
-)
-from open_webui.env import (
-    ENV,
-    SRC_LOG_LEVELS,
-    AIOHTTP_CLIENT_TIMEOUT,
-    AIOHTTP_CLIENT_TIMEOUT_OPENAI_MODEL_LIST,
-    BYPASS_MODEL_ACCESS_CONTROL,
-)
-from open_webui.constants import ERROR_MESSAGES
+from pydantic import BaseModel, ConfigDict
+from starlette.background import BackgroundTask
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["OLLAMA"])
@@ -69,7 +59,9 @@ log.setLevel(SRC_LOG_LEVELS["OLLAMA"])
 
 
 async def send_get_request(url, key=None):
+    print("send_get_request", url, flush=True)
     timeout = aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT_OPENAI_MODEL_LIST)
+    print("timeout", timeout, flush=True)
     try:
         async with aiohttp.ClientSession(timeout=timeout, trust_env=True) as session:
             async with session.get(
@@ -259,13 +251,20 @@ async def update_config(
 async def get_all_models(request: Request):
     log.info("get_all_models()")
     if request.app.state.config.ENABLE_OLLAMA_API:
+        print("if1", flush=True)
+
         request_tasks = []
         for idx, url in enumerate(request.app.state.config.OLLAMA_BASE_URLS):
+            print("for1", flush=True)
+
             if (str(idx) not in request.app.state.config.OLLAMA_API_CONFIGS) and (
                 url not in request.app.state.config.OLLAMA_API_CONFIGS  # Legacy support
             ):
+                print("if2", url, flush=True)
+
                 request_tasks.append(send_get_request(f"{url}/api/tags"))
             else:
+                print("else2", flush=True)
                 api_config = request.app.state.config.OLLAMA_API_CONFIGS.get(
                     str(idx),
                     request.app.state.config.OLLAMA_API_CONFIGS.get(
@@ -275,14 +274,17 @@ async def get_all_models(request: Request):
 
                 enable = api_config.get("enable", True)
                 key = api_config.get("key", None)
+                print(url, flush=True)
 
                 if enable:
                     request_tasks.append(send_get_request(f"{url}/api/tags", key))
                 else:
                     request_tasks.append(asyncio.ensure_future(asyncio.sleep(0, None)))
-
+        print("beforeresponse", flush=True)
+        for t in request_tasks:
+            print(t, flush=True)
         responses = await asyncio.gather(*request_tasks)
-
+        print("after", flush=True)
         for idx, response in enumerate(responses):
             if response:
                 url = request.app.state.config.OLLAMA_BASE_URLS[idx]

@@ -9,9 +9,6 @@ from urllib.parse import urlparse
 
 import chromadb
 import requests
-from pydantic import BaseModel
-from sqlalchemy import JSON, Column, DateTime, Integer, func
-
 from open_webui.env import (
     DATA_DIR,
     DATABASE_URL,
@@ -25,6 +22,8 @@ from open_webui.env import (
     log,
 )
 from open_webui.internal.db import Base, get_db
+from pydantic import BaseModel
+from sqlalchemy import JSON, Column, DateTime, Integer, func
 
 
 class EndpointFilter(logging.Filter):
@@ -1037,6 +1036,7 @@ def validate_cors_origin(origin):
 # CORS_ALLOW_ORIGIN=http://localhost:5173;http://localhost:8080
 # in your .env file depending on your frontend port, 5173 in this case.
 CORS_ALLOW_ORIGIN = os.environ.get("CORS_ALLOW_ORIGIN", "*").split(";")
+CORS_ALLOW_ORIGIN = ["http://localhost:5173", "http://localhost:8080"]
 
 if "*" in CORS_ALLOW_ORIGIN:
     log.warning(
