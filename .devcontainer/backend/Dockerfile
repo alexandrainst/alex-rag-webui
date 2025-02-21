@@ -10,8 +10,6 @@ RUN apt update && export DEBIAN_FRONTEND=noninteractive \
     && apt -y install --no-install-recommends ffmpeg sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# COPY .devcontainer/backend/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
 RUN curl -fsSL https://ollama.com/install.sh | sh
 
-# CMD ["/usr/bin/supervisord"]
+# TODO: Add ollama serve as default cmd (done from docker compose presently)
